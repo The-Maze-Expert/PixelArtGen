@@ -14,6 +14,7 @@ let eraser;
 let download;
 let undo;
 let redo;
+let pipette;
 let mx, my, pmx, pmy;
 let dim = { w: 32, h: 32 };
 let isDrawing = 0;
@@ -28,7 +29,7 @@ function setup() {
 
   history.push(createImage(dim.w, dim.h));
   history[0].loadPixels();
-  
+
   art = createImage(dim.w, dim.h);
   art.loadPixels();
 
@@ -66,9 +67,10 @@ function setup() {
 
   eraser = new Button("eraser", 480 - 24 * 3, 24, 24, 24);
   rectBrush = new Button("rect", 480 - 24 * 4, 24, 24, 24);
+  pipette = new Button("pipette", 480 - 24 * 2, 24, 24, 24);
   undo = new Button("undo", 480 - 24 * 4, 0, 24, 24);
   redo = new Button("redo", 480 - 24 * 3, 0, 24, 24);
-  download = new Button("download", 480 - 24 * 2, 24, 24, 24);
+  download = new Button("download", 480 - 24 * 2, 0, 24, 24);
 
   initialClick = { x: 0, y: 0 };
 
@@ -112,6 +114,7 @@ function draw() {
   undo.display();
   redo.display();
   download.display();
+  pipette.display();
   pop();
 
   // for (let i = 0; i < dim.w; i++) {
@@ -399,12 +402,31 @@ class Button {
         fill(80, 160, 255);
         rect(6, 7, this.w - 12, this.h - 14);
         break;
+      case "pipette":
+        if (selected.pipette) {
+          stroke(64);
+          strokeWeight(2);
+          fill(128);
+        } else {
+          stroke(64);
+          strokeWeight(2);
+          fill(96);
+        }
+        rect(0, 0, this.w, this.h);
+        stroke(220, 128, 64);
+        arc(16, 8, 8, 8, -PI * 0.75, PI * 0.25);
+        push();
+        translate(16, 8)
+        rotate(PI / 4);
+        rect(0, 0, 8, 8);
+        pop();
+        break;
       case "download":
         stroke(64);
         strokeWeight(2);
         fill(96);
         rect(0, 0, this.w, this.h);
-        stroke(32, 160, 64);
+        stroke(64, 192, 96);
         line(6, this.h - 10, 6, this.h - 6);
         line(this.w - 6, this.h - 10, this.w - 6, this.h - 6);
         line(6, this.h - 6, this.w - 6, this.h - 6);
