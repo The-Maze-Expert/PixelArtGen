@@ -58,7 +58,7 @@ function setup() {
   palette = new ColorPalette(10, 2);
   selected.color = palette.colors[0][0];
   selected.index = [0, 0];
-  selected.erase = false;
+  selected.eraser = false;
   selected.drawRect = false;
 
   NicNaksReallyCoolColorPickerThatHeDefinatelyDidntJustCopyFromP5 = createColorPicker(
@@ -99,7 +99,7 @@ function draw() {
     }
   }
 
-  if (!selected.erase) {
+  if (!selected.eraser) {
     noFill();
     stroke(255);
     strokeWeight(3);
@@ -138,11 +138,23 @@ function mousePressed() {
   initialClick.x = mx;
   initialClick.y = my;
 
-  if (eraser.clicked(x, y)) selected.erase = !selected.erase;
+  if (eraser.clicked(x, y)) selected.eraser = !selected.eraser;
   if (rectBrush.clicked(x, y)) selected.drawRect = !selected.drawRect;
+  if (pipette.clicked(x, y)) selected.pipette = !selected.pipette;
   if (undo.clicked(x, y)) doUndo();
   if (redo.clicked(x, y)) doRedo();
   if (download.clicked(x, y)) art.save("Pixel_Art.png");
+
+  if (selected.pipette && inBox(mx, my, 0, 0, dim.w, dim.h)) {
+    palette.colors[selected.index[0]][selected.index[1]] = art.get(floor(mx), floor(my));
+    selected.color = palette.colors[selected.index[0]][selected.index[1]];
+    NicNaksReallyCoolColorPickerThatHeDefinatelyDidntJustCopyFromP5.remove();
+    NicNaksReallyCoolColorPickerThatHeDefinatelyDidntJustCopyFromP5 = createColorPicker(
+      selected.color
+    ).position(width / 2 + 20, height / 2 - 240 - 24);
+    selected.pipette = false;
+    return;
+  }
 
   x = floor(
     map(mouseX, width / 2 - 240, width / 2 - 240 + palette.w * 24, 0, palette.w)
@@ -159,7 +171,7 @@ function mousePressed() {
 
   if (!inBox(x, y, 0, 0, palette.w, palette.h)) return;
 
-  selected.erase = false;
+  selected.eraser = false;
   selected.color = palette.colors[x][y];
   selected.index = [x, y];
   NicNaksReallyCoolColorPickerThatHeDefinatelyDidntJustCopyFromP5.remove();
@@ -174,7 +186,7 @@ function mouseReleased() {
   for (let i = 0; i < dim.w; i++) {
     for (let j = 0; j < dim.h; j++) {
       let c = overlay.get(i, j);
-      if (!selected.erase && c[3] > 0) art.set(i, j, color(c));
+      if (!selected.eraser && c[3] > 0) art.set(i, j, color(c));
       else if (c[3] > 0) art.set(i, j, color(0, 0, 0, 0));
       overlay.set(i, j, color(0, 0, 0, 0));
     }
@@ -203,6 +215,8 @@ function mouseDragged() {
   pmy = my;
   mx = map(pmouseX, width / 2 - 240, width / 2 + 240, 0, dim.w);
   my = map(pmouseY, height / 2 - 240 + 32, height / 2 + 240 + 32, 0, dim.h);
+
+  if (selected.pipette) return;
 
   if (inBox(mx, my, 0, 0, dim.w, dim.h)) isDrawing++;
 
@@ -261,9 +275,9 @@ function drawLine(x0, y0, x1, y1) {
     t++;
 
     if (!inBox(x0, y0, 0, 0, dim.w, dim.h)) break;
-    // if (selected.erase) art.set(x0, y0, color(0, 0, 0, 0));
+    // if (selected.eraser) art.set(x0, y0, color(0, 0, 0, 0));
     // else art.set(x0, y0, selected.color);
-    if (!selected.erase) overlay.set(x0, y0, selected.color);
+    if (!selected.eraser) overlay.set(x0, y0, selected.color);
     else overlay.set(x0, y0, color(255, 255, 255, 255));
 
     if (x0 == x1 && y0 == y1) break;
@@ -296,7 +310,7 @@ function drawRect(x0, y0, x1, y1) {
   for (let i = 0; i < dim.w; i++) {
     for (let j = 0; j < dim.h; j++) {
       if (inBox(i, j, x - 1, y - 1, X, Y)) {
-        if (!selected.erase) overlay.set(i, j, selected.color);
+        if (!selected.eraser) overlay.set(i, j, selected.color);
         else overlay.set(i, j, color(255, 255, 255, 255));
       } else overlay.set(i, j, color(0, 0, 0, 0));
     }
@@ -371,7 +385,7 @@ class Button {
     strokeJoin(ROUND);
     switch (this.name) {
       case "eraser":
-        if (selected.erase) {
+        if (selected.eraser) {
           stroke(64);
           strokeWeight(2);
           fill(128);
@@ -382,7 +396,7 @@ class Button {
         }
         rect(0, 0, this.w, this.h);
         stroke(220, 100, 160);
-        fill(260, 120, 200);
+        fill(255, 140, 220);
         quad(5, 12, 4, 16, 10, 17, 11, 13);
         quad(10, 17, 11, 13, 20, 9, 19, 13);
         quad(5, 12, 11, 13, 20, 9, 14, 8);
@@ -413,13 +427,20 @@ class Button {
           fill(96);
         }
         rect(0, 0, this.w, this.h);
-        stroke(220, 128, 64);
-        arc(16, 8, 8, 8, -PI * 0.75, PI * 0.25);
-        push();
-        translate(16, 8)
+        translate(17, 3);
         rotate(PI / 4);
-        rect(0, 0, 8, 8);
-        pop();
+        stroke(220, 128, 64);
+        fill(255, 160, 96);
+        rect(0, 0, 6, 6, 3, 3, 0, 0);
+        beginShape();
+        vertex(1, 11);
+        vertex(1, 14);
+        bezierVertex(1, 16, 3, 18, 3, 20);
+        bezierVertex(3, 18, 5, 16, 5, 14);
+        vertex(5, 11);
+        endShape();
+        line(1, 6, 1, 11);
+        line(5, 6, 5, 11);
         break;
       case "download":
         stroke(64);
