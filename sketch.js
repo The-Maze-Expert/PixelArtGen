@@ -27,6 +27,8 @@ function preload() {
 function setup() {
   createCanvas(windowWidth, windowHeight);
 
+  noCursor();
+
   history.push(createImage(dim.w, dim.h));
   history[0].loadPixels();
 
@@ -79,6 +81,7 @@ function setup() {
 
 function draw() {
   background(32);
+
   // fps = frameCount % 20 == 0 ? round(frameRate()) : fps;
 
   palette.colors[selected.index[0]][selected.index[1]] = color(
@@ -117,16 +120,14 @@ function draw() {
   pipette.display();
   pop();
 
-  // for (let i = 0; i < dim.w; i++) {
-  //   for (let j = 0; j < dim.h; j++) {
-  //     art.set(i.j, color(overlay.get(i, j)));
-  //     overlay.set(i, j, color(0, 0, 0, 0));
-  //   }
-  // }
-  // overlay.updatePixels();
-
-  // rect(0, 0, 15, 12);
-  // text(fps, 1, 10);
+  stroke(255);
+  strokeWeight(3);
+  line(mouseX - 5, mouseY, mouseX + 5, mouseY);
+  line(mouseX, mouseY - 5, mouseX, mouseY + 5);
+  stroke(0);
+  strokeWeight(1);
+  line(mouseX - 5, mouseY, mouseX + 5, mouseY);
+  line(mouseX, mouseY - 5, mouseX, mouseY + 5);
 }
 
 function mousePressed() {
@@ -146,7 +147,29 @@ function mousePressed() {
   if (download.clicked(x, y)) art.save("Pixel_Art.png");
 
   if (selected.pipette && inBox(mx, my, 0, 0, dim.w, dim.h)) {
-    palette.colors[selected.index[0]][selected.index[1]] = art.get(floor(mx), floor(my));
+    let colorChosen = art.get(floor(mx), floor(my));
+    console.log(colorChosen);
+    for (let i = 0; i < palette.w; i++) {
+      for (let j = 0; j < palette.h; j++) {
+        if (
+          colorChosen[0] == palette.colors[i][j]._array[0] * 255 &&
+          colorChosen[1] == palette.colors[i][j]._array[1] * 255 &&
+          colorChosen[2] == palette.colors[i][j]._array[2] * 255
+        ) {
+          selected.index = [i, j];
+          selected.color = palette.colors[i][j];
+          console.log(i, j, palette.colors[i][j]._array, selected.color._array);
+          NicNaksReallyCoolColorPickerThatHeDefinatelyDidntJustCopyFromP5.remove();
+          NicNaksReallyCoolColoƒPickerThatHeDefinatelyDidntJustCopyFromP5 = createColorPicker(
+            selected.color
+          ).position(width / 2 + 20, height / 2 - 240 - 24);
+          selected.pipette = false;
+          return;
+        }
+      }
+    }
+
+    palette.colors[selected.index[0]][selected.index[1]] = colorChosen;
     selected.color = palette.colors[selected.index[0]][selected.index[1]];
     NicNaksReallyCoolColorPickerThatHeDefinatelyDidntJustCopyFromP5.remove();
     NicNaksReallyCoolColorPickerThatHeDefinatelyDidntJustCopyFromP5 = createColorPicker(
@@ -432,7 +455,7 @@ class Button {
         stroke(220, 128, 64);
         fill(255, 160, 120);
         rect(1, 0, 4, 6, 3, 3, 0, 0);
-        line(0, 6, 6, 6)
+        line(0, 6, 6, 6);
         beginShape();
         vertex(1, 11);
         vertex(1, 14);
