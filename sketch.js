@@ -430,8 +430,9 @@ class Button {
         translate(17, 3);
         rotate(PI / 4);
         stroke(220, 128, 64);
-        fill(255, 160, 96);
-        rect(0, 0, 6, 6, 3, 3, 0, 0);
+        fill(255, 160, 120);
+        rect(1, 0, 4, 6, 3, 3, 0, 0);
+        line(0, 6, 6, 6)
         beginShape();
         vertex(1, 11);
         vertex(1, 14);
@@ -439,8 +440,8 @@ class Button {
         bezierVertex(3, 18, 5, 16, 5, 14);
         vertex(5, 11);
         endShape();
-        line(1, 6, 1, 11);
-        line(5, 6, 5, 11);
+        line(1, 7, 1, 11);
+        line(5, 7, 5, 11);
         break;
       case "download":
         stroke(64);
